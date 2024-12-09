@@ -27,7 +27,7 @@ try {
       { prompt },
       {
         execution: {
-          maxIterations: 2,
+          maxIterations: 8,
           maxRetriesPerStep: 3,
           totalMaxRetries: 10,
         },

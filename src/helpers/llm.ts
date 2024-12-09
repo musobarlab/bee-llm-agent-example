@@ -7,6 +7,7 @@ import { Client as BAMSDK } from "@ibm-generative-ai/node-sdk";
 import { OpenAIChatLLM } from "bee-agent-framework/adapters/openai/chat";
 import { OllamaChatLLM } from "bee-agent-framework/adapters/ollama/chat";
 import { GroqChatLLM } from "bee-agent-framework/adapters/groq/chat";
+import { VertexAIChatLLM } from "bee-agent-framework/adapters/vertexai/chat";
 import { Ollama } from "ollama";
 import Groq from "groq-sdk";
 
@@ -16,8 +17,12 @@ export const Providers = {
   OLLAMA: "ollama",
   OPENAI: "openai",
   GROQ: "groq",
+  AZURE: "azure",
 } as const;
 type Provider = (typeof Providers)[keyof typeof Providers];
+
+const ollamaHeaders: HeadersInit = new Headers();
+ollamaHeaders.set('Host', getEnv("OLLAMA_HOST"));
 
 export const LLMFactories: Record<Provider, () => ChatLLM<ChatLLMOutput>> = {
   [Providers.BAM]: () =>
@@ -51,6 +56,7 @@ export const LLMFactories: Record<Provider, () => ChatLLM<ChatLLMOutput>> = {
       },
       client: new Ollama({
         host: getEnv("OLLAMA_HOST"),
+        headers: ollamaHeaders
       }),
     }),
   [Providers.WATSONX]: () =>
@@ -58,6 +64,15 @@ export const LLMFactories: Record<Provider, () => ChatLLM<ChatLLMOutput>> = {
       apiKey: getEnv("WATSONX_API_KEY"),
       projectId: getEnv("WATSONX_PROJECT_ID"),
       region: getEnv("WATSONX_REGION"),
+    }),
+  [Providers.AZURE]: () =>
+    new OpenAIChatLLM({
+      modelId: getEnv("OPENAI_MODEL") || "gpt-4o-mini",
+      azure: true,
+      parameters: {
+        temperature: 0,
+        max_tokens: 2048,
+      },
     }),
 };
 
